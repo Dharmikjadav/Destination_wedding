@@ -1,0 +1,86 @@
+/* ===== NAVBAR ===== */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: #ffffff;
+  border-bottom: 1px solid #eee;
+}
+
+/* CONTAINER */
+.navbar-container {
+  
+  /* margin: 0 auto; */
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ===== LOGO ===== */
+.logo-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-icon {
+  font-size: 30px;
+}
+
+.logo-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #5c3a2e;
+  margin: 0;
+  font-family: "Georgia", serif;
+}
+
+.logo-subtitle {
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: #c8956c;
+  margin: 0;
+}
+
+/* ===== NAV LINKS ===== */
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+/* LINK STYLE */
+.nav-link {
+  background: none;
+  border: none;
+  font-size: 15px;
+  font-weight: 500;
+  color: #444;
+  cursor: pointer;
+  padding-bottom: 3px;
+  transition: 0.3s;
+  border-bottom: 2px solid transparent;
+}
+
+/* ACTIVE */
+.nav-link.active {
+  color: #c8956c;
+  border-bottom: 2px solid #c8956c;
+}
+
+/* ===== SIGN IN BUTTON ===== */
+.signin-btn {
+  padding: 6px 18px;
+  font-size: 13px;
+  border: 1px solid #c8956c;
+  background: transparent;
+  color: #5c3a2e;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.signin-btn:hover {
+  background: #c8956c;
+  color: white;
+}
