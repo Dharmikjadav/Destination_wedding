@@ -260,7 +260,7 @@ const Package = () => {
                     disabled={loading}
                     className="w-full py-5 rounded-2xl bg-gradient-to-r from-[#5C3A2E] to-[#B76E79] text-white font-bold uppercase tracking-[0.2em] text-[10px] shadow-2xl hover:shadow-[#B76E79]/40 hover:-translate-y-1 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
                   >
-                    {loading ? <LayerIcon className="animate-pulse" size={18} /> : editingId ? <Edit3 size={18} /> : <CheckCircle2 size={18} />}
+                    {loading ? <Layers className="animate-pulse" size={18} /> : editingId ? <Edit3 size={18} /> : <CheckCircle2 size={18} />}
                     {loading ? "Finalizing Essence..." : editingId ? "Save Refinements" : "Launch Collection Package"}
                   </button>
                 </div>

@@ -1,12 +1,24 @@
 import React, { useEffect, useState } from "react";
 import { getUsers, deleteUser } from "../../api/userApi";
+import AdminTable from "./AdminTable";
+import {
+  User as UserIcon,
+  Trash2,
+  Shield,
+  ShoppingBag,
+  UserCircle,
+  Mail,
+  Phone,
+  MoreVertical
+} from "lucide-react";
+import { motion } from "framer-motion";
+
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // 🔥 Fetch users from API
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -20,160 +32,111 @@ const UserManagement = () => {
         setLoading(false);
       }
     };
-
     fetchUsers();
   }, []);
 
-  // 🔍 Search Logic
-  const filteredUsers = users.filter((user) =>
-    user?.name?.toLowerCase().includes(search.toLowerCase()) ||
-    user?.email?.toLowerCase().includes(search.toLowerCase()) ||
-    user?.role?.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const getRoleColor = (role) => {
-    switch (role) {
-      case "admin":
-        return "bg-purple-50 text-purple-600 border-purple-200";
-      case "vendor":
-        return "bg-pink-50 text-pink-600 border-pink-200";
-      default:
-        return "bg-indigo-50 text-indigo-600 border-indigo-200";
-    }
-  };
-
-  // 🗑️ Delete User Handler
   const handleDeleteUser = async (userId, userName) => {
     if (window.confirm(`Are you sure you want to delete ${userName}? This action cannot be undone.`)) {
       try {
         const result = await deleteUser(userId);
         if (result.status === "success" || result.message) {
-          // Remove from local state
           setUsers(users.filter(u => u._id !== userId));
-          alert(`${userName} has been deleted successfully.`);
-        } else {
-          alert("Failed to delete user. Please try again.");
         }
       } catch (err) {
         console.error("Delete error:", err);
-        alert("Error deleting user. Please try again.");
       }
     }
   };
 
-  return (
-    <div className="flex flex-col gap-6">
+  const getRoleBadge = (role) => {
+    const styles = {
+      admin: { bg: "bg-purple-50", text: "text-purple-600", border: "border-purple-100", icon: Shield },
+      vendor: { bg: "bg-rose-50", text: "text-rose-600", border: "border-rose-100", icon: ShoppingBag },
+      user: { bg: "bg-amber-50", text: "text-amber-600", border: "border-amber-100", icon: UserCircle }
+    };
+    const style = styles[role] || styles.user;
+    const Icon = style.icon;
 
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">
-          User Management
-        </h1>
-        <p className="text-sm text-slate-500">
-          Search and manage users, vendors and admins.
-        </p>
-      </div>
+    return (
+      <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border ${style.bg} ${style.text} ${style.border} text-[9px] font-bold uppercase tracking-wider shadow-sm`}>
+        <Icon size={12} />
+        {role}
+      </span>
+    );
+  };
 
-      {/* 🔍 Search Bar */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200">
-        <input
-          type="text"
-          placeholder="Search by name, email or role..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") e.preventDefault();
-          }}
-          className="w-full px-4 py-2 border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-200 text-sm"
-        />
-      </div>
-
-      {/* Table */}
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-slate-50 border-b">
-              <tr>
-                <th className="px-6 py-4 font-semibold text-slate-500">Name</th>
-                <th className="px-6 py-4 font-semibold text-slate-500">Email</th>
-                <th className="px-6 py-4 font-semibold text-slate-500">Role</th>
-                <th className="px-6 py-4 font-semibold text-slate-500">Phone</th>
-                <th className="px-6 py-4 text-right"></th>
-              </tr>
-            </thead>
-
-            <tbody className="divide-y">
-
-              {/* 🔄 Loading */}
-              {loading && (
-                <tr>
-                  <td colSpan="5" className="text-center py-6 text-slate-400">
-                    Loading users...
-                  </td>
-                </tr>
-              )}
-
-              {/* ❌ Error */}
-              {error && !loading && (
-                <tr>
-                  <td colSpan="5" className="text-center py-6 text-red-500">
-                    {error}
-                  </td>
-                </tr>
-              )}
-
-              {/* ✅ Data */}
-              {!loading && !error && filteredUsers.map((user) => (
-                <tr key={user._id} className="hover:bg-slate-50">
-                  <td className="px-6 py-4 font-medium text-slate-800">
-                    {user.name || "N/A"}
-                  </td>
-
-                  <td className="px-6 py-4 text-slate-600">
-                    {user.email}
-                  </td>
-
-                  <td className="px-6 py-4">
-                    <span
-                      className={`px-3 py-1 rounded-md text-xs font-semibold border ${getRoleColor(
-                        user.role
-                      )}`}
-                    >
-                      {user.role}
-                    </span>
-                  </td>
-
-                  <td className="px-6 py-4 text-slate-600">
-                    {user.number || "-"}
-                  </td>
-
-                  <td className="px-6 py-4 text-right">
-                    <button
-                      onClick={() => handleDeleteUser(user._id, user.name)}
-                      type="button"
-                      className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-
-              {/* 🔍 No Results */}
-              {!loading && !error && filteredUsers.length === 0 && (
-                <tr>
-                  <td colSpan="5" className="text-center py-6 text-slate-400">
-                    No users found.
-                  </td>
-                </tr>
-              )}
-
-            </tbody>
-          </table>
+  const columns = [
+    {
+      header: "Identity",
+      className: "w-1/3",
+      render: (user) => (
+        <div className="flex items-center gap-4">
+          <div className="w-10 h-10 rounded-xl bg-[#FDF5E6] flex items-center justify-center text-[#B76E79] font-bold shadow-sm border border-[#B76E79]/5">
+            {user.name ? user.name.substring(0, 1).toUpperCase() : "?"}
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[11px] font-bold text-[#5C3A2E] uppercase tracking-wide">{user.name || "Anonymous"}</span>
+            <span className="text-[9px] text-[#5C3A2E]/40 font-medium flex items-center gap-1 mt-0.5">
+              <Mail size={10} /> {user.email}
+            </span>
+          </div>
         </div>
-      </div>
+      )
+    },
+    {
+      header: "Privilege",
+      render: (user) => getRoleBadge(user.role)
+    },
+    {
+      header: "Contact",
+      render: (user) => (
+        <span className="flex items-center gap-2 text-[#5C3A2E]/60">
+          <Phone size={12} className="text-[#B76E79]" />
+          {user.number || "Unspecified"}
+        </span>
+      )
+    },
+    {
+      header: "Actions",
+      className: "text-right",
+      render: (user) => (
+        <div className="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            className="w-9 h-9 rounded-xl bg-white border border-[#B76E79]/10 flex items-center justify-center text-[#B76E79] hover:bg-[#B76E79] hover:text-white transition-all shadow-sm"
+          >
+            <MoreVertical size={16} />
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            onClick={() => handleDeleteUser(user._id, user.name)}
+            className="w-9 h-9 rounded-xl bg-white border border-[#B76E79]/10 flex items-center justify-center text-rose-500 hover:bg-rose-500 hover:text-white transition-all shadow-sm"
+          >
+            <Trash2 size={16} />
+          </motion.button>
+        </div>
+      )
+    }
+  ];
 
-    </div>
+  const filteredUsers = users.filter((user) =>
+  (user?.name?.toLowerCase().includes(search.toLowerCase()) ||
+    user?.email?.toLowerCase().includes(search.toLowerCase()) ||
+    user?.role?.toLowerCase().includes(search.toLowerCase()))
+  );
+
+  return (
+    <AdminTable
+      title="User Management"
+      description="Administrative control over platform citizens"
+      columns={columns}
+      data={filteredUsers}
+      onSearch={setSearch}
+      searchValue={search}
+      loading={loading}
+      error={error}
+      emptyMessage="No citizens found in the registry."
+    />
   );
 };
 

@@ -1,16 +1,123 @@
 import React, { useState, useMemo } from "react";
+import AdminTable from "./AdminTable";
+import {
+  CreditCard,
+  Banknote,
+  Smartphone,
+  CheckCircle2,
+  Clock,
+  AlertCircle,
+  Calendar,
+  User,
+  Hash,
+  DollarSign,
+  Receipt
+} from "lucide-react";
+import { motion } from "framer-motion";
 
 const PaymentManagement = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
 
   const payments = [
-    { id: "PMT-1001", booking: "BK-9021", user: "Sophia & James", amount: "$15,400", method: "Credit Card", status: "Completed", date: "Oct 12, 2024" },
-    { id: "PMT-1002", booking: "BK-9025", user: "Liam & Olivia", amount: "$4,200", method: "Bank Transfer", status: "Pending", date: "Nov 05, 2024" },
-    { id: "PMT-1003", booking: "BK-9030", user: "Noah & Emma", amount: "$2,800", method: "UPI", status: "Failed", date: "Dec 20, 2024" },
+    { id: "PMT-1001", booking: "BK-9021", user: "Sophia & James", amount: "₹1,25,000", method: "Credit Card", status: "Completed", date: "Oct 12, 2024" },
+    { id: "PMT-1002", booking: "BK-9025", user: "Liam & Olivia", amount: "₹45,000", method: "Bank Transfer", status: "Pending", date: "Nov 05, 2024" },
+    { id: "PMT-1003", booking: "BK-9030", user: "Noah & Emma", amount: "₹28,000", method: "UPI", status: "Failed", date: "Dec 20, 2024" },
+    { id: "PMT-1004", booking: "BK-9042", user: "Kabir & Myra", amount: "₹2,10,000", method: "Credit Card", status: "Completed", date: "Jan 15, 2025" },
+    { id: "PMT-1005", booking: "BK-9050", user: "Arjun & Diya", amount: "₹95,000", method: "UPI", status: "Refunded", date: "Feb 02, 2025" },
   ];
 
-  // 🔎 Filter Logic
+  const getStatusBadge = (status) => {
+    const styles = {
+      Completed: { bg: "bg-emerald-50", text: "text-emerald-600", border: "border-emerald-100", icon: CheckCircle2 },
+      Pending: { bg: "bg-amber-50", text: "text-amber-600", border: "border-amber-100", icon: Clock },
+      Failed: { bg: "bg-rose-50", text: "text-rose-600", border: "border-rose-100", icon: AlertCircle },
+      Refunded: { bg: "bg-slate-50", text: "text-slate-500", border: "border-slate-100", icon: Receipt }
+    };
+    const style = styles[status] || styles.Pending;
+    const Icon = style.icon;
+
+    return (
+      <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border ${style.bg} ${style.text} ${style.border} text-[9px] font-bold uppercase tracking-wider shadow-sm`}>
+        <Icon size={12} />
+        {status}
+      </span>
+    );
+  };
+
+  const getMethodIcon = (method) => {
+    switch (method) {
+      case "Credit Card": return <CreditCard size={12} />;
+      case "Bank Transfer": return <Banknote size={12} />;
+      case "UPI": return <Smartphone size={12} />;
+      default: return <DollarSign size={12} />;
+    }
+  };
+
+  const columns = [
+    {
+      header: "Transaction",
+      render: (p) => (
+        <div className="flex flex-col">
+          <div className="flex items-center gap-2 text-[#B76E79] font-bold">
+            <Hash size={12} />
+            <span>{p.id}</span>
+          </div>
+          <span className="text-[9px] text-[#5C3A2E]/40 font-bold uppercase tracking-widest mt-0.5">
+            Ref: {p.booking}
+          </span>
+        </div>
+      )
+    },
+    {
+      header: "Beneficiary",
+      className: "w-1/4",
+      render: (p) => (
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-[#FDF5E6] flex items-center justify-center text-[#B76E79]">
+            <User size={14} />
+          </div>
+          <span className="text-[11px] font-bold text-[#5C3A2E] uppercase tracking-wide">{p.user}</span>
+        </div>
+      )
+    },
+    {
+      header: "Value",
+      render: (p) => (
+        <div className="flex flex-col">
+          <span className="text-[11px] font-bold text-[#5C3A2E]">{p.amount}</span>
+          <span className="text-[9px] text-[#5C3A2E]/40 font-bold flex items-center gap-1 uppercase tracking-widest mt-0.5">
+            {getMethodIcon(p.method)} {p.method}
+          </span>
+        </div>
+      )
+    },
+    {
+      header: "Timestamp",
+      render: (p) => (
+        <span className="flex items-center gap-2 text-[#5C3A2E]/40 font-medium text-[9px]">
+          <Calendar size={10} /> {p.date}
+        </span>
+      )
+    },
+    {
+      header: "Fiscal Status",
+      render: (p) => getStatusBadge(p.status)
+    },
+    {
+      header: "Analysis",
+      className: "text-right",
+      render: (p) => (
+        <motion.button
+          whileHover={{ scale: 1.1, x: -5 }}
+          className="w-10 h-10 rounded-2xl bg-white border border-[#B76E79]/10 flex items-center justify-center text-[#B76E79] hover:bg-[#5C3A2E] hover:text-white transition-all shadow-sm ml-auto opacity-0 group-hover:opacity-100"
+        >
+          <Receipt size={18} />
+        </motion.button>
+      )
+    }
+  ];
+
   const filteredPayments = useMemo(() => {
     return payments.filter((p) => {
       const matchesSearch =
@@ -26,105 +133,15 @@ const PaymentManagement = () => {
   }, [searchTerm, statusFilter]);
 
   return (
-    <div className="flex flex-col gap-8">
-
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">
-          Payment Management
-        </h1>
-        <p className="text-sm text-slate-500">
-          Review and manage all payment records
-        </p>
-      </div>
-
-      {/* Filter Bar */}
-      <div className="flex flex-col lg:flex-row gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-
-        {/* Search */}
-        <div className="flex items-center bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 w-full lg:w-96">
-          <span className="material-symbols-outlined text-slate-400">
-            search
-          </span>
-          <input
-            type="text"
-            placeholder="Search by ID, booking or user..."
-            className="bg-transparent w-full text-sm ml-2 focus:outline-none"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-
-        {/* Status Filter */}
-        <select
-          className="border border-slate-200 rounded-lg px-4 py-2 text-sm w-full lg:w-52"
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-        >
-          <option value="All">All Statuses</option>
-          <option value="Completed">Completed</option>
-          <option value="Pending">Pending</option>
-          <option value="Failed">Failed</option>
-          <option value="Refunded">Refunded</option>
-        </select>
-      </div>
-
-      {/* Table */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead className="bg-slate-50 border-b border-slate-200">
-              <tr>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Payment ID</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Booking</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Customer</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Amount</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Method</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Status</th>
-                <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Date</th>
-              </tr>
-            </thead>
-
-            <tbody className="divide-y divide-slate-100">
-              {filteredPayments.length > 0 ? (
-                filteredPayments.map((p, i) => (
-                  <tr key={i} className="hover:bg-slate-50 transition">
-                    <td className="px-6 py-4 text-sm font-medium text-slate-700">{p.id}</td>
-                    <td className="px-6 py-4 text-sm text-slate-600">{p.booking}</td>
-                    <td className="px-6 py-4 text-sm text-slate-600">{p.user}</td>
-                    <td className="px-6 py-4 font-semibold text-slate-900">{p.amount}</td>
-                    <td className="px-6 py-4 text-sm text-slate-600">{p.method}</td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`px-3 py-1 text-xs rounded-full font-medium ${
-                          p.status === "Completed"
-                            ? "bg-emerald-100 text-emerald-700"
-                            : p.status === "Pending"
-                            ? "bg-amber-100 text-amber-700"
-                            : p.status === "Failed"
-                            ? "bg-red-100 text-red-700"
-                            : "bg-slate-100 text-slate-600"
-                        }`}
-                      >
-                        {p.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-slate-500">{p.date}</td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="7" className="text-center py-10 text-slate-400 text-sm">
-                    No matching payments found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-
-          </table>
-        </div>
-      </div>
-    </div>
+    <AdminTable
+      title="Fiscal Intelligence"
+      description="Transactional oversight and revenue auditing"
+      columns={columns}
+      data={filteredPayments}
+      onSearch={setSearchTerm}
+      searchValue={searchTerm}
+      emptyMessage="No financial ledger entries found."
+    />
   );
 };
 

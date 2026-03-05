@@ -1,58 +1,103 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+    LayoutDashboard,
+    Users,
+    Ship,
+    Layers,
+    CalendarCheck,
+    CreditCard,
+    ChevronLeft,
+    ChevronRight,
+    ShieldCheck,
+    LogOut,
+    Bell
+} from 'lucide-react';
 
 const AdminSidebar = ({ isCollapsed, setIsCollapsed }) => {
     const location = useLocation();
 
     const menuItems = [
-        { name: 'Dashboard', path: '/admin/dashboard' },
-        { name: 'Users', path: '/admin/users' },
-        { name: 'Vendors Services', path: '/admin/services' },
-        { name: 'Packages', path: '/admin/packages' },
-        { name: 'Bookings', path: '/admin/bookings' },
-        { name: 'Payments', path: '/admin/payments' },
+        { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
+        { name: 'Users', path: '/admin/users', icon: Users },
+        { name: 'Vendors Services', path: '/admin/services', icon: Ship },
+        { name: 'Packages', path: '/admin/packages', icon: Layers },
+        { name: 'Bookings', path: '/admin/bookings', icon: CalendarCheck },
+        { name: 'Payments', path: '/admin/payments', icon: CreditCard },
     ];
 
     return (
         <aside
-            className={`fixed left-0 top-0 h-screen bg-white border-r border-slate-200 transition-all duration-300 z-50 flex flex-col
-        ${isCollapsed ? 'w-20' : 'w-64'}`}
+            className={`fixed left-0 top-0 h-screen bg-white/80 backdrop-blur-xl border-r border-[#B76E79]/10 transition-all duration-500 ease-in-out z-50 flex flex-col shadow-2xl
+        ${isCollapsed ? 'w-24' : 'w-72'}`}
         >
             {/* Brand Section */}
-            <div className="p-6 flex items-center gap-3 overflow-hidden whitespace-nowrap">
-                <div className="w-10 h-10 rounded-xl bg-indigo-600 flex-shrink-0 flex items-center justify-center text-white shadow-lg shadow-indigo-100">
-                    {/* <span className="material-symbols-outlined text-2xl font-bold">security</span> */}
-                </div>
-                {!isCollapsed && (
-                    <div className="flex flex-col">
-                        <span className="font-bold text-slate-900 text-lg leading-none tracking-tight">Admin</span>
-                        {/* <span className="text-[10px] text-indigo-600 font-bold uppercase tracking-widest mt-1">Management Portal</span> */}
-                    </div>
-                )}
+            <div className={`p-8 flex items-center gap-4 overflow-hidden whitespace-nowrap border-b border-[#B76E79]/5`}>
+                <motion.div
+                    whileHover={{ rotate: 5, scale: 1.05 }}
+                    className="w-12 h-12 rounded-[1.25rem] bg-gradient-to-br from-[#5C3A2E] to-[#B76E79] flex-shrink-0 flex items-center justify-center text-white shadow-xl shadow-[#B76E79]/20"
+                >
+                    <ShieldCheck size={24} />
+                </motion.div>
+                <AnimatePresence>
+                    {!isCollapsed && (
+                        <motion.div
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -10 }}
+                            className="flex flex-col"
+                        >
+                            <span className="font-serif font-bold text-[#5C3A2E] text-xl leading-none tracking-tight">Admin</span>
+                            <span className="text-[9px] text-[#B76E79] font-bold uppercase tracking-[0.2em] mt-1.5 px-0.5">Control Essence</span>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
 
             {/* Navigation */}
-            <nav className="flex-grow px-3 py-4 flex flex-col gap-1">
+            <nav className="flex-grow px-4 py-8 flex flex-col gap-2 overflow-y-auto scrollbar-hide">
                 {menuItems.map((item) => {
                     const isActive = location.pathname === item.path;
+                    const Icon = item.icon;
                     return (
                         <Link
                             key={item.path}
                             to={item.path}
-                            className={`flex items-center gap-3 px-3 py-3 rounded-lg transition-all relative group
-                ${isActive
-                                    ? 'bg-indigo-50 text-indigo-700 font-bold shadow-sm border border-indigo-100/50'
-                                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'}`}
+                            className={`flex items-center gap-4 px-4 py-4 rounded-3xl transition-all relative group
+                            ${isActive
+                                    ? 'bg-[#5C3A2E] text-white shadow-2xl shadow-[#5C3A2E]/20'
+                                    : 'text-[#5C3A2E]/50 hover:bg-[#FDF5E6] hover:text-[#5C3A2E]'}`}
                         >
-                            <span className={`material-symbols-outlined text-xl ${isActive ? 'text-indigo-600' : 'text-slate-400 group-hover:text-slate-600'}`}>
-                                {item.icon}
-                            </span>
-                            {!isCollapsed && <span className="text-sm tracking-wide">{item.name}</span>}
+                            <motion.div
+                                animate={{ scale: isActive ? 1 : 0.9 }}
+                                className={`flex-shrink-0 transition-colors ${isActive ? 'text-white' : 'text-[#B76E79]'}`}
+                            >
+                                <Icon size={22} />
+                            </motion.div>
+
+                            <AnimatePresence>
+                                {!isCollapsed && (
+                                    <motion.span
+                                        initial={{ opacity: 0, x: -10 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: -10 }}
+                                        className="text-[11px] font-bold uppercase tracking-[0.15em]"
+                                    >
+                                        {item.name}
+                                    </motion.span>
+                                )}
+                            </AnimatePresence>
+
                             {isActive && !isCollapsed && (
-                                <div className="absolute right-3 w-1.5 h-1.5 rounded-full bg-indigo-600" />
+                                <motion.div
+                                    layoutId="sidebarActive"
+                                    className="absolute right-4 w-1.5 h-1.5 rounded-full bg-[#B76E79]"
+                                />
                             )}
+
                             {isCollapsed && (
-                                <div className="absolute left-full ml-4 px-2 py-1 bg-slate-900 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap">
+                                <div className="absolute left-full ml-6 px-4 py-2 bg-[#5C3A2E] text-white text-[10px] font-bold uppercase tracking-widest rounded-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-300 whitespace-nowrap shadow-2xl">
                                     {item.name}
                                 </div>
                             )}
@@ -62,15 +107,15 @@ const AdminSidebar = ({ isCollapsed, setIsCollapsed }) => {
             </nav>
 
             {/* Collapse Toggle */}
-            <div className="p-4 border-t border-slate-100">
-                <button
+            <div className="p-6 border-t border-[#B76E79]/5">
+                <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => setIsCollapsed(!isCollapsed)}
-                    className="w-full flex items-center justify-center py-2 rounded-lg hover:bg-slate-50 text-slate-400 transition-colors"
+                    className="w-full flex items-center justify-center py-4 rounded-2xl bg-[#FDF5E6] text-[#B76E79] hover:bg-[#B76E79] hover:text-white transition-all duration-300 shadow-sm"
                 >
-                    <span className={`material-symbols-outlined transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`}>
-                        first_page
-                    </span>
-                </button>
+                    {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+                </motion.button>
             </div>
         </aside>
     );

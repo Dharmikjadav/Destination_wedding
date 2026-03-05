@@ -1,4 +1,19 @@
 import React, { useEffect, useState } from "react";
+import AdminTable from "./AdminTable";
+import {
+  Package,
+  Tag,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  Layers,
+  Search,
+  Plus,
+  ArrowRight,
+  TrendingUp,
+  Box
+} from "lucide-react";
+import { motion } from "framer-motion";
 
 const BASE_URL = "http://127.0.0.1:8000";
 
@@ -6,6 +21,7 @@ const PackageManagement = () => {
   const [packages, setPackages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [processingId, setProcessingId] = useState(null);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     fetchPendingPackages();
@@ -15,32 +31,18 @@ const PackageManagement = () => {
     try {
       setLoading(true);
       const res = await fetch(`${BASE_URL}/packages/status/pending`);
-      
-      if (!res.ok) {
-        throw new Error(`API error: ${res.status}`);
-      }
-      
       const data = await res.json();
-      console.log("API Response:", data);
-      
-      // Handle different response formats
+
       let packagesArray = [];
       if (Array.isArray(data)) {
         packagesArray = data;
       } else if (data && typeof data === 'object') {
-        // If response is an object, try to find the array
-        if (data.data && Array.isArray(data.data)) {
-          packagesArray = data.data;
-        } else if (data.packages && Array.isArray(data.packages)) {
-          packagesArray = data.packages;
-        }
+        if (data.data && Array.isArray(data.data)) packagesArray = data.data;
+        else if (data.packages && Array.isArray(data.packages)) packagesArray = data.packages;
       }
-      
       setPackages(packagesArray);
     } catch (error) {
       console.error("Error fetching packages:", error);
-      setPackages([]);
-      alert("❌ Error loading packages");
     } finally {
       setLoading(false);
     }
@@ -49,17 +51,10 @@ const PackageManagement = () => {
   const approvePackage = async (id) => {
     try {
       setProcessingId(id);
-      const res = await fetch(`${BASE_URL}/packages/${id}/approve`, {
-        method: "PATCH",
-      });
-      if (!res.ok) {
-        throw new Error("Failed to approve package");
-      }
-      alert("✅ Package approved successfully");
+      await fetch(`${BASE_URL}/packages/${id}/approve`, { method: "PATCH" });
       fetchPendingPackages();
     } catch (error) {
       console.error("Error approving package:", error);
-      alert("❌ Error approving package");
     } finally {
       setProcessingId(null);
     }
@@ -68,103 +63,109 @@ const PackageManagement = () => {
   const rejectPackage = async (id) => {
     try {
       setProcessingId(id);
-      const res = await fetch(`${BASE_URL}/packages/${id}/reject`, {
-        method: "PATCH",
-      });
-      if (!res.ok) {
-        throw new Error("Failed to reject package");
-      }
-      alert("✅ Package rejected successfully");
+      await fetch(`${BASE_URL}/packages/${id}/reject`, { method: "PATCH" });
       fetchPendingPackages();
     } catch (error) {
       console.error("Error rejecting package:", error);
-      alert("❌ Error rejecting package");
     } finally {
       setProcessingId(null);
     }
   };
 
+  const columns = [
+    {
+      header: "Registry",
+      render: (pkg) => (
+        <div className="flex items-center gap-4">
+          <div className="w-10 h-10 rounded-xl bg-[#FDF5E6] flex items-center justify-center text-[#B76E79]">
+            <Box size={20} />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[11px] font-bold text-[#5C3A2E] uppercase tracking-wide">{pkg.package_name}</span>
+            <span className="text-[9px] text-[#B76E79] font-bold uppercase tracking-widest mt-0.5">Premium Tier</span>
+          </div>
+        </div>
+      )
+    },
+    {
+      header: "Valuation",
+      render: (pkg) => (
+        <div className="flex flex-col">
+          <span className="text-[11px] font-bold text-[#5C3A2E]">₹{pkg.price || "N/A"}</span>
+          <span className="text-[9px] text-[#5C3A2E]/40 font-bold flex items-center gap-1 uppercase tracking-widest">
+            <TrendingUp size={10} /> Market Standard
+          </span>
+        </div>
+      )
+    },
+    {
+      header: "Composition",
+      className: "w-1/4",
+      render: (pkg) => (
+        <div className="flex flex-wrap gap-1">
+          {pkg.services_included?.slice(0, 2).map((s, i) => (
+            <span key={i} className="px-2 py-0.5 rounded-lg bg-[#FDF5E6] text-[#B76E79] text-[8px] font-bold uppercase tracking-tighter border border-[#B76E79]/5">
+              {s}
+            </span>
+          )) || <span className="text-[9px] text-gray-400">None</span>}
+          {pkg.services_included?.length > 2 && (
+            <span className="text-[8px] font-bold text-[#B76E79]/40 ml-1">+{pkg.services_included.length - 2} more</span>
+          )}
+        </div>
+      )
+    },
+    {
+      header: "Timeline",
+      render: (pkg) => (
+        <span className="flex items-center gap-2 text-[#5C3A2E]/40 font-bold uppercase tracking-widest text-[9px]">
+          <Clock size={10} /> {pkg.duration_days || "N/A"} Cycles
+        </span>
+      )
+    },
+    {
+      header: "Evaluation",
+      className: "text-right",
+      render: (pkg) => (
+        <div className="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => approvePackage(pkg._id)}
+            disabled={processingId === pkg._id}
+            className="px-5 py-2 rounded-xl bg-emerald-500 text-white text-[9px] font-bold uppercase tracking-widest shadow-lg shadow-emerald-500/20 disabled:opacity-50"
+          >
+            {processingId === pkg._id ? "..." : "Approve"}
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => rejectPackage(pkg._id)}
+            disabled={processingId === pkg._id}
+            className="px-5 py-2 rounded-xl bg-white border border-rose-500 text-rose-500 text-[9px] font-bold uppercase tracking-widest disabled:opacity-50"
+          >
+            {processingId === pkg._id ? "..." : "Reject"}
+          </motion.button>
+        </div>
+      )
+    }
+  ];
+
+  const filteredPackages = packages.filter(pkg =>
+    pkg.package_name?.toLowerCase().includes(search.toLowerCase()) ||
+    pkg.description?.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
-    <div className="w-full p-6">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2" style={{ color: "#5c3a2e" }}>
-          📦 Package Management
-        </h1>
-        <p className="text-sm" style={{ color: "#8b6058" }}>
-          Review and manage pending vendor packages
-        </p>
-      </div>
-
-      {loading ? (
-        <div className="text-center py-12">
-          <p className="text-gray-500">Loading packages...</p>
-        </div>
-      ) : packages.length === 0 ? (
-        <div className="glass rounded-2xl p-12 text-center">
-          <p className="text-gray-500">✅ No pending packages to review</p>
-        </div>
-      ) : (
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {packages.map((pkg) => (
-            <div
-              key={pkg._id}
-              className="glass rounded-2xl p-6 shadow-md hover:shadow-lg transition-shadow border border-rose-100/20"
-            >
-              <h2 className="text-lg font-bold mb-2" style={{ color: "#5c3a2e" }}>
-                {pkg.package_name}
-              </h2>
-
-              <p className="text-2xl font-bold mb-2" style={{ color: "#c8956c" }}>
-                ₹{pkg.price || "N/A"}
-              </p>
-
-              <p className="text-xs mb-4" style={{ color: "#8b6058" }}>
-                ⏱️ {pkg.duration_days || "N/A"} Days
-              </p>
-
-              {pkg.services_included && pkg.services_included.length > 0 && (
-                <div className="mb-4 pb-4 border-b border-rose-100/30">
-                  <p className="text-xs font-semibold mb-2" style={{ color: "#5c3a2e" }}>
-                    Services Included:
-                  </p>
-                  <div className="space-y-1">
-                    {pkg.services_included.map((service, index) => (
-                      <div key={index} className="text-xs text-gray-600">
-                        ✓ {service}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {pkg.description && (
-                <p className="mb-4 text-xs text-gray-600 line-clamp-2">
-                  {pkg.description}
-                </p>
-              )}
-
-              <div className="flex gap-3 mt-6">
-                <button
-                  onClick={() => approvePackage(pkg._id)}
-                  disabled={processingId === pkg._id}
-                  className="flex-1 bg-green-600 text-white py-2.5 rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-semibold text-sm"
-                >
-                  {processingId === pkg._id ? "⏳ Processing..." : "✓ Approve"}
-                </button>
-
-                <button
-                  onClick={() => rejectPackage(pkg._id)}
-                  disabled={processingId === pkg._id}
-                  className="flex-1 bg-red-600 text-white py-2.5 rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-semibold text-sm"
-                >
-                  {processingId === pkg._id ? "⏳ Processing..." : "✕ Reject"}
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+    <AdminTable
+      title="Package Curation"
+      description="Reviewing elite wedding propositions"
+      columns={columns}
+      data={filteredPackages}
+      onSearch={setSearch}
+      searchValue={search}
+      loading={loading}
+      emptyMessage="No propositions awaiting review."
+    />
   );
 };
 
