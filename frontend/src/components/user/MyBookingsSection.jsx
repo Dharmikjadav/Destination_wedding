@@ -1,6 +1,11 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { packages, vendors } from '../../data';
+import { useUserContext } from '../../context/UserContext';
 
-const MyBookingsSection = ({ bookingStatus, statusSteps, selectedDestination,navigate, selectedPackage, packages, selectedVendors, vendors, guests, paymentDone, setActiveNav }) => {
+const MyBookingsSection = () => {
+  const navigate = useNavigate();
+  const { bookingStatus, statusSteps, selectedDestination, selectedPackage, selectedVendors, guests, paymentDone } = useUserContext();
   return (
     <div className="section-enter py-16 px-6 max-w-5xl mx-auto">
       <div className="text-center mb-12">
@@ -34,7 +39,7 @@ const MyBookingsSection = ({ bookingStatus, statusSteps, selectedDestination,nav
           <div key={card.title} className="glass rounded-2xl p-6 shadow-md">
             <div className="flex items-center gap-3 mb-3"><span className="text-2xl">{card.icon}</span><h4 className="font-display text-xl" style={{color:"#5c3a2e"}}>{card.title}</h4></div>
             <p className="font-semibold text-sm" style={{color:"#8b5c3e"}}>{card.content}</p>
-            {card.content==="Not selected"&&<button onClick={()=>navigate(card.action)} className="mt-3 text-xs shimmer-btn px-4 py-1.5 rounded-full">Select →</button>}
+            {card.content==="Not selected"&&<button onClick={()=>navigate("/"+card.action.toLowerCase())} className="mt-3 text-xs shimmer-btn px-4 py-1.5 rounded-full">Select →</button>}
           </div>
         ))}
         <div className="glass rounded-2xl p-6 shadow-md">
@@ -43,7 +48,7 @@ const MyBookingsSection = ({ bookingStatus, statusSteps, selectedDestination,nav
           <div className="flex flex-wrap gap-2">
             {selectedVendors.map(id=>{const v=vendors.find(vv=>vv.id===id);return v?<span key={id} className="text-xs px-2 py-1 bg-rose-100 rounded-full text-rose-700">{v.icon} {v.name}</span>:null;})}
           </div>
-          {selectedVendors.length===0&&<button onClick={()=>navigate("Vendors")} className="mt-2 text-xs shimmer-btn px-4 py-1.5 rounded-full">Choose Vendors →</button>}
+          {selectedVendors.length===0&&<button onClick={()=>navigate("/vendors")} className="mt-2 text-xs shimmer-btn px-4 py-1.5 rounded-full">Choose Vendors →</button>}
         </div>
         <div className="glass rounded-2xl p-6 shadow-md">
           <div className="flex items-center gap-3 mb-3"><span className="text-2xl">👥</span><h4 className="font-display text-xl" style={{color:"#5c3a2e"}}>Guest List</h4></div>
@@ -51,7 +56,7 @@ const MyBookingsSection = ({ bookingStatus, statusSteps, selectedDestination,nav
           <div className="w-full bg-rose-100 rounded-full h-2.5"><div className="h-2.5 rounded-full shimmer-btn progress-fill" style={{width:`${guests.length>0?(guests.filter(g=>g.rsvp==="confirmed").length/guests.length)*100:0}%`}}/></div>
         </div>
       </div>
-      {!paymentDone&&<div className="mt-8 text-center"><button onClick={()=>navigate("Payments")} className="shimmer-btn px-12 py-4 rounded-full font-bold shadow-xl">Complete Payment to Confirm →</button></div>}
+      {!paymentDone&&<div className="mt-8 text-center"><button onClick={()=>navigate("/payments")} className="shimmer-btn px-12 py-4 rounded-full font-bold shadow-xl">Complete Payment to Confirm →</button></div>}
     </div>
   );
 };

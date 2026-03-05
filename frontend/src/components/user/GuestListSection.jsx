@@ -1,6 +1,10 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useUserContext } from '../../context/UserContext';
 
-const GuestListSection = ({ guests, newGuest, setNewGuest, addGuest, removeGuest, setActiveNav , navigate}) => {
+const GuestListSection = () => {
+  const navigate = useNavigate();
+  const { guests, newGuest, setNewGuest, addGuest, removeGuest } = useUserContext();
   return (
     <div className="section-enter py-16 px-6 max-w-4xl mx-auto">
       <div className="text-center mb-12">
@@ -46,7 +50,7 @@ const GuestListSection = ({ guests, newGuest, setNewGuest, addGuest, removeGuest
           </tbody>
         </table>
       </div>
-      <div className="mt-8 text-center"><button onClick={()=>navigate("Payments")} className="shimmer-btn px-12 py-4 rounded-full font-bold shadow-xl">Proceed to Payment →</button></div>
+      <div className="mt-8 text-center"><button onClick={()=>navigate("/payments")} className="shimmer-btn px-12 py-4 rounded-full font-bold shadow-xl">Proceed to Payment →</button></div>
     </div>
   );
 };

@@ -1,6 +1,9 @@
 import React from 'react';
+import { packages } from '../../data';
+import { useUserContext } from '../../context/UserContext';
 
-const PaymentsSection = ({ paymentDone, selectedPackage, packages, selectedDestination, selectedVendors, guests, handlePayment }) => {
+const PaymentsSection = () => {
+  const { paymentDone, selectedPackage, selectedDestination, selectedVendors, guests, handlePayment } = useUserContext();
   return (
     <div className="section-enter py-16 px-6 max-w-2xl mx-auto">
       <div className="text-center mb-12">

@@ -5,14 +5,12 @@ const AdminSidebar = ({ isCollapsed, setIsCollapsed }) => {
     const location = useLocation();
 
     const menuItems = [
-        { name: 'Dashboard', icon: 'dashboard', path: '/admin/dashboard' },
-        { name: 'Users', icon: 'group', path: '/admin/users' },
-        { name: 'Vendors', icon: 'storefront', path: '/admin/vendors' },
-        { name: 'Venues', icon: 'location_on', path: '/admin/venues' },
-        { name: 'Bookings', icon: 'calendar_month', path: '/admin/bookings' },
-        { name: 'Content', icon: 'layers', path: '/admin/content' },
-        { name: 'Reports', icon: 'assessment', path: '/admin/reports' },
-        { name: 'Settings', icon: 'settings', path: '/admin/settings' },
+        { name: 'Dashboard', path: '/admin/dashboard' },
+        { name: 'Users', path: '/admin/users' },
+        { name: 'Vendors Services', path: '/admin/services' },
+        { name: 'Packages', path: '/admin/packages' },
+        { name: 'Bookings', path: '/admin/bookings' },
+        { name: 'Payments', path: '/admin/payments' },
     ];
 
     return (
@@ -23,12 +21,12 @@ const AdminSidebar = ({ isCollapsed, setIsCollapsed }) => {
             {/* Brand Section */}
             <div className="p-6 flex items-center gap-3 overflow-hidden whitespace-nowrap">
                 <div className="w-10 h-10 rounded-xl bg-indigo-600 flex-shrink-0 flex items-center justify-center text-white shadow-lg shadow-indigo-100">
-                    <span className="material-symbols-outlined text-2xl font-bold">security</span>
+                    {/* <span className="material-symbols-outlined text-2xl font-bold">security</span> */}
                 </div>
                 {!isCollapsed && (
                     <div className="flex flex-col">
-                        <span className="font-bold text-slate-900 text-lg leading-none tracking-tight">Authority</span>
-                        <span className="text-[10px] text-indigo-600 font-bold uppercase tracking-widest mt-1">Management Portal</span>
+                        <span className="font-bold text-slate-900 text-lg leading-none tracking-tight">Admin</span>
+                        {/* <span className="text-[10px] text-indigo-600 font-bold uppercase tracking-widest mt-1">Management Portal</span> */}
                     </div>
                 )}
             </div>

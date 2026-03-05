@@ -1,6 +1,9 @@
+from ast import pattern
+
 from pydantic import BaseModel, EmailStr, Field
 from typing import List, Optional
 from datetime import date
+from enum import Enum
 
 
 # Users
@@ -19,13 +22,29 @@ class Login(BaseModel):
     password: str = Field(..., min_length=6)
 
 
+class PackageStatus(str, Enum):
+    pending = "pending"
+    approved = "approved"
+    rejected = "rejected"
+
 # Packages
+class PackageCreate(BaseModel):
+    package_name: str
+    price: int = Field(..., ge=0)
+    duration_days: int = Field(..., ge=0)
+    services_included: List[str]
+    description: Optional[str] = None
+    vendor_id: str
+
 class Package(BaseModel):
     package_name: str
     price: int = Field(..., ge=0)
     duration_days: int = Field(..., ge=0)
     services_included: List[str]
     description: Optional[str] = None
+    status: str = PackageStatus.pending
+    vendor_id: str
+    
 
 
 # Destinations
@@ -39,9 +58,13 @@ class Destination(BaseModel):
 
 # Services
 class Service(BaseModel):
+    image: Optional[str] = None
+    category: str
     service_name: str
     description: Optional[str] = None
     price: int = Field(..., ge=0)
+    status: str = "pending"
+    vendor_id: str
 
 
 # Bookings
@@ -76,3 +99,12 @@ class Inquiry(BaseModel):
     phone: str = Field(..., pattern=r'^\+?\d{7,15}$')
     destination: Optional[str] = None
     message: Optional[str] = None
+
+
+# Payments
+class Payment(BaseModel):
+    booking_id: str
+    amount: float = Field(..., ge=0)
+    method: str
+    status: str = Field(..., pattern=r"^(pending|completed|failed|refunded)$")
+    transaction_date: date

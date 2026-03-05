@@ -1,108 +1,325 @@
-import React from 'react';
+import React, { useEffect, useState } from "react";
+
+const BASE_URL = "http://127.0.0.1:8000";
 
 const Package = () => {
+  const [packages, setPackages] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [modalData, setModalData] = useState(null);
+
+  const [formData, setFormData] = useState({
+    package_name: "",
+    price: "",
+    duration_days: "",
+    services_included: "",
+    description: "",
+  });
+
+  useEffect(() => {
+    fetchPackages();
+  }, []);
+
+ const fetchPackages = async () => {
+  try {
+    setLoading(true);
+
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user || user.role !== "vendor") {
+      console.error("User not logged in or not a vendor");
+      return;
+    }
+
+    const res = await fetch(`${BASE_URL}/packages/vendor/${user.id}`);
+    const data = await res.json();
+
+    console.log("API response:", data);
+
+    if (Array.isArray(data)) {
+      setPackages(data);
+    } else if (Array.isArray(data.data)) {
+      setPackages(data.data);
+    } else {
+      setPackages([]);
+    }
+
+  } catch (error) {
+    console.error("Error fetching packages:", error);
+  } finally {
+    setLoading(false);
+  }
+};
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user || user.role !== "vendor") {
+      alert("You must be logged in as a vendor");
+      return;
+    }
+
+    const payload = {
+      package_name: formData.package_name,
+      price: Number(formData.price),
+      duration_days: Number(formData.duration_days),
+      services_included: formData.services_included
+        .split(",")
+        .map((s) => s.trim()),
+      description: formData.description,
+      vendor_id: user.id,
+    };
+
+    try {
+      setLoading(true);
+
+      if (editingId) {
+        await fetch(`${BASE_URL}/packages/${editingId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      } else {
+        await fetch(`${BASE_URL}/packages`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      }
+
+      setFormData({
+        package_name: "",
+        price: "",
+        duration_days: "",
+        services_included: "",
+        description: "",
+      });
+
+      setEditingId(null);
+      fetchPackages();
+    } catch (error) {
+      console.error(error);
+      alert("Error saving package");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEdit = (pkg) => {
+    if (pkg.status === "approved") {
+      alert("Approved packages cannot be edited");
+      return;
+    }
+
+    setEditingId(pkg._id);
+
+    setFormData({
+      package_name: pkg.package_name,
+      price: pkg.price,
+      duration_days: pkg.duration_days,
+      services_included: pkg.services_included.join(", "),
+      description: pkg.description || "",
+    });
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this package?"))
+      return;
+
+    await fetch(`${BASE_URL}/packages/${id}`, {
+      method: "DELETE",
+    });
+
+    fetchPackages();
+  };
+
   return (
-    <div className="flex flex-col gap-5 md:gap-8 p-4 md:p-6 pt-5 md:pt-8 max-w-7xl mx-auto w-full animate-fade-up">
-      {/* Title Section */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 pb-5 md:pb-8">
-        <div className="flex flex-col gap-1">
-          <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">Curation Suites</h1>
-          <p className="text-[8px] md:text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-1">Design your service tiers</p>
+    <div className="max-w-7xl mx-auto p-6 space-y-10">
+
+      {/* Add / Edit Form */}
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4"
+      >
+        <h2 className="text-xl font-bold text-slate-900">
+          {editingId ? "Edit Package" : "Add New Package"}
+        </h2>
+
+        <div className="grid md:grid-cols-2 gap-4">
+          <input
+            required
+            name="package_name"
+            value={formData.package_name}
+            onChange={handleChange}
+            placeholder="Package Name"
+            className="border p-2 rounded-md"
+          />
+
+          <input
+            required
+            name="price"
+            type="number"
+            value={formData.price}
+            onChange={handleChange}
+            placeholder="Price"
+            className="border p-2 rounded-md"
+          />
+
+          <input
+            required
+            name="duration_days"
+            type="number"
+            value={formData.duration_days}
+            onChange={handleChange}
+            placeholder="Duration (Days)"
+            className="border p-2 rounded-md"
+          />
+
+          <input
+            required
+            name="services_included"
+            value={formData.services_included}
+            onChange={handleChange}
+            placeholder="Services (comma separated)"
+            className="border p-2 rounded-md"
+          />
         </div>
-        <button className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg font-bold text-[8px] md:text-[9px] uppercase tracking-widest transition-all shadow-sm active:scale-95 w-full md:w-fit justify-center">
-          <span className="material-symbols-outlined text-lg">add</span>
-          New Suite
+
+        <textarea
+          name="description"
+          value={formData.description}
+          onChange={handleChange}
+          placeholder="Description"
+          className="border p-2 rounded-md w-full"
+        />
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700"
+        >
+          {loading ? "Saving..." : editingId ? "Update Package" : "Save Package"}
         </button>
-      </div>
+      </form>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-        {[
-          { label: "Portfolio Revenue", value: "$125k", trend: "+12%", icon: "attach_money", color: "#4f46e5", bg: "bg-indigo-50" },
-          { label: "Monthly Projection", value: "$42.5k", trend: "+5%", icon: "calendar_month", color: "#6366f1", bg: "bg-slate-50" },
-          { label: "Active Suites", value: "3", trend: "of 5 slots", icon: "inventory_2", color: "#4f46e5", bg: "bg-indigo-50/30" }
-        ].map((stat, i) => (
-          <div key={i} className="bg-white p-5 rounded-xl shadow-sm border border-slate-200 relative overflow-hidden group hover:border-indigo-200 transition-all duration-300">
-            <div className="absolute top-0 right-0 p-3 opacity-[0.03] group-hover:opacity-[0.06] transition-opacity">
-              <span className="material-symbols-outlined text-4xl md:text-5xl" style={{ color: stat.color }}>{stat.icon}</span>
-            </div>
-            <div className="flex justify-between items-start mb-3">
-              <div className={`w-9 h-9 rounded-lg ${stat.bg} flex items-center justify-center`} style={{ color: stat.color }}>
-                <span className="material-symbols-outlined text-lg md:text-xl">{stat.icon}</span>
-              </div>
-              <span className="bg-slate-50 border border-slate-100 text-slate-500 text-[8px] md:text-[9px] font-bold px-2.5 py-0.5 rounded-full shadow-sm">
-                {stat.trend}
+      {/* Packages */}
+      {loading && <p className="text-center">Loading packages...</p>}
+
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {packages.map((pkg) => (
+          <div
+            key={pkg._id}
+            className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:border-indigo-400 transition"
+          >
+            <h3 className="text-lg font-bold">{pkg.package_name}</h3>
+
+            <p className="text-indigo-600 font-bold text-xl mt-2">
+              ₹{pkg.price}
+            </p>
+
+            <p className="text-sm text-slate-500">
+              {pkg.duration_days} Days
+            </p>
+
+            {/* Status Badge */}
+            <p className="mt-2 text-sm">
+              Status:
+              <span
+                className={`ml-2 px-2 py-1 rounded text-xs ${pkg.status === "approved"
+                    ? "bg-green-100 text-green-700"
+                    : pkg.status === "rejected"
+                      ? "bg-red-100 text-red-700"
+                      : "bg-yellow-100 text-yellow-700"
+                  }`}
+              >
+                {pkg.status}
               </span>
+            </p>
+
+            <div className="mt-4 space-y-1">
+              {pkg.services_included.map((service, i) => (
+                <div key={i} className="text-sm">
+                  • {service}
+                </div>
+              ))}
             </div>
-            <p className="text-slate-400 text-[8px] md:text-[9px] font-bold uppercase tracking-widest mb-1">{stat.label}</p>
-            <p className="text-slate-900 text-xl md:text-2xl font-bold">{stat.value}</p>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => handleEdit(pkg)}
+                className="flex-1 bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700"
+              >
+                Edit
+              </button>
+
+              <button
+                onClick={() => handleDelete(pkg._id)}
+                className="flex-1 bg-red-500 text-white py-2 rounded-md hover:bg-red-600"
+              >
+                Delete
+              </button>
+
+              <button
+                onClick={() => setModalData(pkg)}
+                className="flex-1 bg-slate-200 py-2 rounded-md"
+              >
+                View
+              </button>
+            </div>
           </div>
         ))}
       </div>
 
-      {/* Pricing Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 md:gap-7 pt-2">
-        {[
-          { name: "Silver Elegance", desc: "Perfect for intimate gatherings and small ceremonies.", price: "5,000", color: "#4f46e5", features: ["5 Hours Venue Access", "Standard Floral Decor", "Basic Catering Buffet"] },
-          { name: "Gold Prestige", desc: "Our most popular choice for standard weddings.", price: "8,500", color: "#4f46e5", features: ["8 Hours Venue Access", "Premium Decor & Lighting", "3-Course Plated Dinner", "Professional DJ Services"], highlight: true },
-          { name: "Royal Sovereign", desc: "The ultimate luxury experience for grand celebrations.", price: "15,000", color: "#4f46e5", features: ["Full Day Venue Access", "Luxury Floral Masterpiece", "Gourmet 5-Course Meal", "Live Band & Fireworks"] }
-        ].map((pkg, i) => (
-          <div key={i} className={`flex flex-col bg-white rounded-2xl border ${pkg.highlight ? 'border-indigo-600 ring-1 ring-indigo-50 shadow-md' : 'border-slate-200'} overflow-hidden hover:border-indigo-400 transition-all duration-300 relative group`}>
-            {pkg.highlight && (
-              <div className="absolute top-4 right-4 z-10">
-                <span className="bg-indigo-600 text-white text-[7px] md:text-[8px] uppercase font-bold tracking-widest px-3 py-1 rounded-full shadow-sm">Most Popular</span>
-              </div>
+      {/* Modal */}
+      {modalData && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center"
+          onClick={() => setModalData(null)}
+        >
+          <div
+            className="bg-white rounded-2xl p-8 max-w-md w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-xl font-bold">{modalData.package_name}</h3>
+
+            <p className="text-indigo-600 font-bold">
+              ₹{modalData.price}
+            </p>
+
+            <p className="text-sm text-slate-500">
+              {modalData.duration_days} Days
+            </p>
+
+            <div className="mt-4">
+              {modalData.services_included.map((s, i) => (
+                <div key={i}>• {s}</div>
+              ))}
+            </div>
+
+            {modalData.description && (
+              <p className="mt-4 text-slate-600">
+                {modalData.description}
+              </p>
             )}
-            <div className="p-6 md:p-8 flex flex-col h-full">
-              <div className="mb-4 md:mb-6">
-                <h3 className="text-slate-900 text-lg md:text-xl font-bold mb-1.5">{pkg.name}</h3>
-                <p className="text-slate-500 text-[10px] md:text-xs leading-relaxed">{pkg.desc}</p>
-              </div>
-              <div className="flex items-baseline gap-1.5 mb-6 md:mb-8">
-                <span className="text-[8px] md:text-[9px] font-bold text-indigo-600 uppercase tracking-widest">Starts at</span>
-                <span className="text-2xl md:text-3xl font-bold text-slate-900">${pkg.price}</span>
-                <span className="text-slate-400 text-[9px] md:text-[10px] font-medium">/ event</span>
-              </div>
-              <div className="space-y-3 mb-8 flex-grow">
-                {pkg.features.map((feat, fi) => (
-                  <div key={fi} className="flex items-center gap-3 text-[10px] md:text-xs text-slate-600">
-                    <span className="material-symbols-outlined text-indigo-500 text-base md:text-lg">check_circle</span>
-                    <span className="font-medium tracking-tight">{feat}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-auto">
-                <button className={`w-full py-2.5 px-4 rounded-lg border ${pkg.highlight ? 'bg-indigo-600 text-white shadow-sm border-indigo-600 hover:bg-indigo-700' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'} font-bold text-[8px] md:text-[9px] uppercase tracking-widest transition-all flex items-center justify-center gap-2`}>
-                  <span className="material-symbols-outlined text-base">edit_square</span>
-                  Refine Details
-                </button>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
 
-      {/* Bottom Action Bar */}
-      <div className="mt-4 p-5 md:p-8 rounded-2xl bg-white border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-sm relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-slate-50 to-transparent pointer-events-none" />
-        <div className="flex items-center gap-4 relative z-10 w-full sm:w-auto">
-          <div className="w-10 h-10 md:w-12 md:h-12 bg-slate-50 rounded-lg flex items-center justify-center text-indigo-600 shadow-inner shrink-0 border border-slate-100">
-            <span className="material-symbols-outlined text-xl md:text-2xl">campaign</span>
-          </div>
-          <div>
-            <h4 className="text-slate-900 font-bold text-base md:text-lg">Visibility Spotlight</h4>
-            <p className="text-slate-500 text-[8px] md:text-[9px] font-bold uppercase tracking-widest mt-1">Feature this collection globally</p>
+            <button
+              onClick={() => setModalData(null)}
+              className="mt-6 w-full bg-indigo-600 text-white py-2 rounded-md"
+            >
+              Close
+            </button>
           </div>
         </div>
-        <div className="flex items-center gap-3 relative z-10 bg-slate-50 p-1.5 rounded-lg border border-slate-200 shadow-sm">
-          <span className="text-[8px] md:text-[9px] font-bold text-slate-400 uppercase tracking-widest px-2">Offline</span>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input defaultChecked className="sr-only peer" type="checkbox" value="" />
-            <div className="w-10 md:w-11 h-5 md:h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[3px] after:left-[3px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 md:after:h-4.5 after:w-3.5 md:after:w-4.5 after:transition-all peer-checked:bg-indigo-600"></div>
-          </label>
-          <span className="text-[8px] md:text-[9px] font-bold text-indigo-600 uppercase tracking-widest px-2">Live Now</span>
-        </div>
-      </div>
+      )}
     </div>
   );
 };

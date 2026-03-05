@@ -1,6 +1,8 @@
 import React from 'react';
+import { useUserContext } from '../../context/UserContext';
 
-const InvitationsSection = ({ selectedDestination, setInviteDownloaded, inviteDownloaded, guests }) => {
+const InvitationsSection = () => {
+  const { selectedDestination, inviteDownloaded, setInviteDownloaded, guests } = useUserContext();
   return (
     <div className="section-enter py-16 px-6 max-w-5xl mx-auto">
       <div className="text-center mb-12">

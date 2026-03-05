@@ -2,6 +2,7 @@ import React from 'react';
 
 const VendorDashboard = () => {
   return (
+
     <div className="p-4 md:p-6 pt-5 md:pt-8 max-w-7xl mx-auto w-full flex flex-col gap-5 md:gap-8 animate-fade-up">
 
       {/* Stats Grid */}
@@ -50,7 +51,6 @@ const VendorDashboard = () => {
             </svg>
           </div>
         </div>
-
         {/* Booking Trends Chart */}
         <div className="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200 group">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-5 md:mb-6 gap-3">

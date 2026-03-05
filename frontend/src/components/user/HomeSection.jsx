@@ -1,7 +1,11 @@
 import React from 'react';
-import { HERO_SLIDES, destinations, packages } from "../../data";
+import { useNavigate } from 'react-router-dom';
+import { HERO_SLIDES, destinations, packages, resortShowcase, testimonials } from "../../data";
+import { useUserContext } from '../../context/UserContext';
 
-const HomeSection = ({ HERO_SLIDES, currentSlide, setCurrentSlide, openlogin, setShowLogin, setLoginMode, navigate, destinations, resortShowcase, testimonials }) => {
+const HomeSection = () => {
+  const navigate = useNavigate();
+  const { currentSlide, setCurrentSlide } = useUserContext();
   return (
     <div>
       {/* HERO */}
@@ -20,10 +24,10 @@ const HomeSection = ({ HERO_SLIDES, currentSlide, setCurrentSlide, openlogin, se
           </h1>
           <p className="text-lg text-white/80 max-w-xl mb-10 leading-relaxed">{HERO_SLIDES[currentSlide].caption}</p>
           <div className="flex flex-wrap gap-4 justify-center">
-            <button onClick={() => openlogin()} className="shimmer-btn px-10 py-4 rounded-full font-bold text-sm tracking-wide shadow-xl">Get a Free Consultation</button>
-            <button onClick={() => navigate("Destinations")} className="px-10 py-4 rounded-full font-bold text-sm border-2 border-white text-white hover:bg-white/10 transition-all">Explore Destinations</button>
+            {/* <button onClick={() => openlogin()} className="shimmer-btn px-10 py-4 rounded-full font-bold text-sm tracking-wide shadow-xl">Get a Free Consultation</button> */}
+            <button onClick={() => navigate("/destinations")} className="px-10 py-4 rounded-full font-bold text-sm border-2 border-white text-white hover:bg-white/10 transition-all">Explore Destinations</button>
           </div>
-          <div className="flex gap-2 mt-12">x
+          <div className="flex gap-2 mt-12">
             {HERO_SLIDES.map((_, i) => (
               <button key={i} onClick={() => setCurrentSlide(i)} className="slide-dot rounded-full" style={{ width: currentSlide === i ? 28 : 10, height: 10, background: currentSlide === i ? "#fde68a" : "rgba(255,255,255,.4)" }} />
             ))}
@@ -111,7 +115,7 @@ const HomeSection = ({ HERO_SLIDES, currentSlide, setCurrentSlide, openlogin, se
                   <div className="p-3 rounded-xl text-sm font-semibold mb-4" style={{ background: "#fef9c3", color: "#854d0e" }}>🎁 {r.offer}</div>
                   <div className="flex items-center justify-between">
                     <span className="text-yellow-500">{"★".repeat(Math.floor(r.rating))}<span className="text-xs text-gray-400 ml-1">{r.rating}</span></span>
-                    <button onClick={() => navigate("Packages")} className="shimmer-btn text-xs px-4 py-2 rounded-full font-bold">View Deal</button>
+                    <button onClick={() => navigate("/packages")} className="shimmer-btn text-xs px-4 py-2 rounded-full font-bold">View Deal</button>
                   </div>
                 </div>
               </div>
@@ -165,7 +169,7 @@ const HomeSection = ({ HERO_SLIDES, currentSlide, setCurrentSlide, openlogin, se
       <div className="py-20 px-6 text-center" style={{ background: "linear-gradient(135deg,#fce8ec,#fdf6ee)" }}>
         <h2 className="text-5xl font-display mb-4" style={{ color: "#5c3a2e" }}>Ready to Start Planning?</h2>
         <p className="text-sm max-w-lg mx-auto mb-8" style={{ color: "#8b6058" }}>Get a FREE consultation with a Certified Destination Wedding Specialist — and be automatically entered to win a $500 Amazon Gift Card!</p>
-        <button onClick={() => { setShowLogin(true); setLoginMode("register"); }} className="shimmer-btn px-14 py-5 rounded-full font-bold text-lg shadow-2xl">Get My Free Consultation 🎁</button>
+        <button onClick={() => navigate("/")} className="shimmer-btn px-14 py-5 rounded-full font-bold text-lg shadow-2xl">Get My Free Consultation 🎁</button>
       </div>
     </div>
   );

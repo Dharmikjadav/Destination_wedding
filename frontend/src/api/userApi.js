@@ -25,3 +25,23 @@ export const loginUser = async (userData) => {
 
   return response.json();
 };
+
+export const getUsers = async () => {
+  const response = await fetch(`${BASE_URL}/users`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  }); 
+  return response.json();
+};
+
+export const deleteUser = async (userId) => {
+  const response = await fetch(`${BASE_URL}/users/${userId}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  return response.json();
+};

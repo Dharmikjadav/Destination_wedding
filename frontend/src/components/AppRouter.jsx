@@ -13,13 +13,10 @@ import MyBookingsSection from './user/MyBookingsSection';
 import AdminLayout from './admin/AdminLayout';
 import AdminDashboard from './admin/AdminDashboard';
 import UserManagement from './admin/UserManagement';
-import VendorManagement from './admin/VendorManagement';
+import VendorServices from './admin/VendorServices';
 import BookingManagement from './admin/BookingManagement';
-import ContentManagement from './admin/ContentManagement';
-import Settings from './admin/Settings';
-import VenueManagement from './admin/VenueManagement';
-import Reports from './admin/Reports';
-import AddUser from './admin/adduser';
+import PaymentManagement from './admin/PaymentManagement';
+import PackageManagement from './admin/PackageManagement';
 
 // Vendor components
 import VendorDashboard from './vendor/VendorDashboard';
@@ -37,123 +34,12 @@ import { packages, destinations, vendors, testimonials, HERO_SLIDES, resortShowc
 const AppRouter = () => {
   const routerNavigate = useNavigate();
   const location = useLocation();
-  const [activeNav, setActiveNav] = React.useState("Home");
-  const [expandedDest, setExpandedDest] = React.useState(null);
-  const [selectedDestination, setSelectedDestination] = React.useState(null);
-  const [selectedPackage, setSelectedPackage] = React.useState(null);
-  const [selectedVendors, setSelectedVendors] = React.useState([]);
-  const [guests, setGuests] = React.useState([]);
-  const [newGuest, setNewGuest] = React.useState({ name: "", email: "", side: "Bride" });
-  const [paymentDone, setPaymentDone] = React.useState(false);
-  const [inviteDownloaded, setInviteDownloaded] = React.useState(false);
-  const [bookingStatus, setBookingStatus] = React.useState("planning");
-  const [statusSteps, setStatusSteps] = React.useState([
-    { label: "Choose Destination", done: false },
-    { label: "Select Package", done: false },
-    { label: "Book Vendors", done: false },
-    { label: "Manage Guests", done: false },
-    { label: "Complete Payment", done: false },
-    { label: "Send Invitations", done: false }
-  ]);
 
-
-  // Handlers
-  const toggleVendor = (id) => {
-    setSelectedVendors(prev =>
-      prev.includes(id) ? prev.filter(v => v !== id) : [...prev, id]
-    );
-  };
-
-  const addGuest = () => {
-    if (newGuest.name && newGuest.email) {
-      setGuests(prev => [...prev, { ...newGuest, id: Date.now(), rsvp: "pending" }]);
-      setNewGuest({ name: "", email: "", side: "Bride" });
-    }
-  };
-
-  const removeGuest = (id) => {
-    setGuests(prev => prev.filter(g => g.id !== id));
-  };
-
-  const handlePayment = () => {
-    setPaymentDone(true);
-    setBookingStatus("confirmed");
-    setStatusSteps(prev => prev.map(step => ({ ...step, done: true })));
-  };
-
-  const navigate = (section) => {
-    const routeMap = {
-      'Home': '/',
-      'Destinations': '/destinations',
-      'Packages': '/packages',
-      'Vendors': '/vendors',
-      'Guest List': '/guests',
-      'Payments': '/payments',
-      'Invitations': '/invitations',
-      'My Bookings': '/bookings',
-      'Booking': '/booking',
-      'Portfolio': '/portfolio',
-      'Service': '/service',
-      'Vendor Dashboard': '/vendor-dashboard'
-    };
-    const route = routeMap[section] || '/';
-    routerNavigate(route);
-  };
-
-  // Update activeNav based on current route
-  React.useEffect(() => {
-    const routeToNavMap = {
-      '/': 'Home',
-      '/destinations': 'Destinations',
-      '/packages': 'Packages',
-      '/vendors': 'Vendors',
-      '/guests': 'Guest List',
-      '/payments': 'Payments',
-      '/invitations': 'Invitations',
-      '/bookings': 'My Bookings',
-      '/booking': 'Booking',
-      '/portfolio': 'Portfolio',
-      '/service': 'Service',
-      '/vendor-dashboard': 'Vendor Dashboard'
-    };
-    const currentNav = routeToNavMap[location.pathname] || 'Home';
-    setActiveNav(currentNav);
-  }, [location.pathname]);
-
-  // Filter destinations based on active filter
-  const [destFilter, setDestFilter] = React.useState("All");
-  const filteredDests = React.useMemo(() => {
-    if (destFilter === "All") return destinations;
-    return destinations.filter(d => d.category === destFilter);
-  }, [destinations, destFilter]);
-
-  // Petals animation
-  const [petals, setPetals] = React.useState([]);
-  React.useEffect(() => {
-    const newPetals = Array.from({ length: 15 }, (_, i) => ({
-      id: i,
-      left: Math.random() * 100,
-      delay: Math.random() * 10,
-      duration: 8 + Math.random() * 4
-    }));
-    setPetals(newPetals);
-  }, []);
-
-  // Hero slides
-  const [currentSlide, setCurrentSlide] = React.useState(0);
-  React.useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide(prev => (prev + 1) % HERO_SLIDES.length);
-    }, 4000);
-    return () => clearInterval(timer);
-  }, [HERO_SLIDES.length]);
-
-  // Login modal state
+  // 🔐 Auth state (only)
   const [showLogin, setShowLogin] = React.useState(false);
   const [loginMode, setLoginMode] = React.useState("login");
   const [formData, setFormData] = React.useState({ email: "", password: "", name: "", role: "user", number: "", businessName: "", adminKey: "" });
   const [loggedUser, setLoggedUser] = React.useState(null);
-
 
   const handleLogin = async () => {
     try {
@@ -172,7 +58,8 @@ const AppRouter = () => {
 
         if (response.id) {
           alert("Account Created Successfully ✅");
-          setLoginMode("login");
+          window.location.reload();
+          // setLoginMode("login");
         } else {
           alert("Signup failed ❌");
         }
@@ -192,7 +79,7 @@ const AppRouter = () => {
           setFormData({
             email: "",
             password: "",
-            role: "user"
+            // role: "user"
           });
           // Role based redirect
           if (response.user.role === "admin") {
@@ -220,15 +107,11 @@ const AppRouter = () => {
   };
 
   const handleLogout = () => {
-
     localStorage.removeItem("user");
-
     setLoggedUser(null);
-
     alert("Logged out successfully");
     window.location.reload();
-
-    navigate("/");
+    routerNavigate("/");
   };
 
   const openlogin = () => {
@@ -237,11 +120,7 @@ const AppRouter = () => {
       setShowLogin(true);
       setLoginMode("login");
     }
-    else {
-      console.log("Already logged in");
-      navigate("/Home");
-    }
-  }
+  };
 
   const ProtectedRoute = ({ children, allowedRoles }) => {
     const user = JSON.parse(localStorage.getItem("user"));
@@ -256,60 +135,9 @@ const AppRouter = () => {
 
     return children;
   };
-  // Common props for all sections
-  const commonProps = {
-    activeNav,
-    setActiveNav,
-    selectedDestination,
-    setSelectedDestination,
-    selectedPackage,
-    setSelectedPackage,
-    selectedVendors,
-    setSelectedVendors,
-    guests,
-    setGuests,
-    newGuest,
-    setNewGuest,
-    paymentDone,
-    setPaymentDone,
-    inviteDownloaded,
-    setInviteDownloaded,
-    bookingStatus,
-    setBookingStatus,
-    statusSteps,
-    setStatusSteps,
-    packages,
-    destinations,
-    vendors,
-    testimonials,
-    HERO_SLIDES,
-    resortShowcase,
-    navItems,
-    destFilter,
-    setDestFilter,
-    filteredDests,
-    expandedDest,
-    setExpandedDest,
-    petals,
-    currentSlide,
-    setCurrentSlide,
-    showLogin,
-    setShowLogin,
-    loginMode,
-    openlogin,
-    setLoginMode,
-    formData,
-    setFormData,
-    toggleVendor,
-    addGuest,
-    removeGuest,
-    handlePayment,
-    navigate
-  };
 
-  const layoutProps = {
-    activeNav,
-    setActiveNav,
+  // 🎨 Auth props for Layout
+  const authProps = {
     showLogin,
     setShowLogin,
     loginMode,
@@ -318,8 +146,8 @@ const AppRouter = () => {
     setFormData,
     handleLogin,
     handleLogout,
-    navItems,
-    openlogin
+    openlogin,
+    navItems
   };
 
 
@@ -334,13 +162,10 @@ const AppRouter = () => {
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
         <Route path="/admin/users" element={<UserManagement />} />
-        <Route path="/admin/vendors" element={<VendorManagement />} />
-        <Route path="/admin/venues" element={<VenueManagement />} />
+        <Route path="/admin/services" element={<VendorServices />} />
         <Route path="/admin/bookings" element={<BookingManagement />} />
-        <Route path="/admin/content" element={<ContentManagement />} />
-        <Route path="/admin/reports" element={<Reports />} />
-        <Route path="/admin/settings" element={<Settings />} />
-        <Route path="/admin/add-user" element={<AddUser />} />
+        <Route path="/admin/payments" element={<PaymentManagement />} />
+        <Route path="/admin/packages" element={<PackageManagement />} />
       </Route>
 
       {/* Vendor Routes - Wrapped in VendorLayout */}
@@ -357,16 +182,15 @@ const AppRouter = () => {
       </Route>
 
       {/* User Routes - Wrapped in Layout */}
-      <Route element={<Layout {...layoutProps} />}>
-        <Route path="/" element={<HomeSection {...commonProps} />} />
-        <Route path="/destinations" element={<DestinationsSection {...commonProps} />} />
-        <Route path="/packages" element={<PackagesSection {...commonProps} />} />
-        <Route path="/vendors" element={<VendorsSection {...commonProps} />} />
-        <Route path="/guests" element={<GuestListSection {...commonProps} />} />
-        <Route path="/payments" element={<PaymentsSection {...commonProps} />} />
-        <Route path="/invitations" element={<InvitationsSection {...commonProps} />} />
-        <Route path="/bookings" element={<MyBookingsSection {...commonProps} />} />
-        <Route path="/add-user" element={<AddUser />} />
+      <Route element={<Layout {...authProps} />}>
+        <Route path="/" element={<HomeSection />} />
+        <Route path="/destinations" element={<DestinationsSection />} />
+        <Route path="/packages" element={<PackagesSection />} />
+        <Route path="/vendors" element={<VendorsSection />} />
+        <Route path="/guests" element={<GuestListSection />} />
+        <Route path="/payments" element={<PaymentsSection />} />
+        <Route path="/invitations" element={<InvitationsSection />} />
+        <Route path="/bookings" element={<MyBookingsSection />} />
       </Route>
     </Routes>
   );

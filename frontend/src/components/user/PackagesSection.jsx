@@ -1,50 +1,144 @@
-import React from 'react';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useUserContext } from "../../context/UserContext";
 
-const PackagesSection = ({ packages, selectedPackage, setSelectedPackage, setActiveNav , navigate }) => {
+const BASE_URL = "http://127.0.0.1:8000";
+
+const PackagesSection = () => {
+
+  const navigate = useNavigate();
+  const { selectedPackage, setSelectedPackage } = useUserContext();
+
+  const [packages, setPackages] = useState([]);
+
+  useEffect(() => {
+    fetchPackages();
+  }, []);
+
+  const fetchPackages = async () => {
+    try {
+
+      const res = await fetch(`${BASE_URL}/packages`);
+      const data = await res.json();
+
+      setPackages(data || []);
+
+    } catch (error) {
+      console.error("Failed to fetch packages", error);
+    }
+  };
+
   return (
-    <div className="section-enter">
-      <div className="relative h-64 overflow-hidden">
-        <img src="https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=1400&q=80" alt="" className="w-full h-full object-cover hero-bg"/>
-        <div className="absolute inset-0" style={{background:"rgba(20,5,0,.6)"}}/>
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
-          <p className="text-xs tracking-widest uppercase text-white/70 mb-2">Curated for Every Couple</p>
-          <h2 className="text-6xl font-display text-white">Wedding Packages</h2>
+
+    <div className="section-enter bg-rose-50/30 min-h-screen pb-20">
+      {/* HERO SECTION */}
+      <div className="relative h-[40vh] min-h-[350px] overflow-hidden shadow-sm">
+        <img
+          src="https://images.unsplash.com/photo-1520854221256-17451cc331bf?q=80&w=2670&auto=format&fit=crop"
+          alt="Wedding Packages"
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-black/40" />
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
+          <p className="text-sm tracking-[0.2em] uppercase text-white/80 mb-3 font-medium">
+            Curated Experiences
+          </p>
+          <h2 className="text-5xl md:text-6xl font-display text-white mb-4 drop-shadow-lg">
+            Our Wedding Packages
+          </h2>
+          <p className="text-white/90 max-w-2xl mx-auto text-sm md:text-base font-light drop-shadow-md">
+            Discover thoughtfully designed packages that blend romance, luxury, and seamless planning for your unforgettable celebration.
+          </p>
         </div>
       </div>
-      <div className="py-14 px-6 max-w-6xl mx-auto">
-        <p className="text-center text-sm max-w-2xl mx-auto mb-12" style={{color:"#8b6058"}}>Many all-inclusive destination wedding packages can be <strong>completely free</strong> with a qualifying room block — making it extremely affordable. Or choose a luxury upgrade for a truly bespoke celebration. Upgraded packages may include a reception with food and drinks, more decorations, live music or a DJ, multiple venues, photography, and more.</p>
+
+      <div className="py-16 px-6 max-w-6xl mx-auto">
+        <div className="text-center mb-16">
+          <h3 className="text-3xl font-display mb-4" style={{ color: "#5c3a2e" }}>Select Your Perfect Match</h3>
+          <p className="text-gray-500 max-w-xl mx-auto text-sm">Choose a package that aligns with your vision and let us handle all the intricate details of your special day.</p>
+        </div>
+
         <div className="grid md:grid-cols-3 gap-8">
-          {packages.map(pkg=>(
-            <div key={pkg.id} className={`relative rounded-3xl overflow-hidden shadow-xl card-hover cursor-pointer border-2 transition-all bg-gradient-to-br ${pkg.color} ${selectedPackage===pkg.id?"ring-4 ring-offset-2 ring-rose-300 scale-[1.03]":""}`} style={{borderColor:selectedPackage===pkg.id?pkg.border:"transparent"}} onClick={()=>setSelectedPackage(pkg.id)}>
-              {pkg.badge&&<div className="absolute top-4 right-4 text-xs px-3 py-1 rounded-full font-bold shimmer-btn shadow-md">{pkg.badge}</div>}
+          {packages.map((pkg) => (
+            <div
+              key={pkg._id}
+              className={`relative rounded-2xl overflow-hidden bg-white shadow-lg hover:shadow-xl cursor-pointer border transition-all duration-300 transform hover:-translate-y-1 ${selectedPackage === pkg._id
+                ? "ring-2 ring-offset-4 ring-[#c8956c] border-[#c8956c] scale-[1.02]"
+                : "border-gray-100"
+                }`}
+              onClick={() => setSelectedPackage(pkg._id)}
+            >
+              {/* Top decorative bar */}
+              <div className="h-2 w-full" style={{ background: "linear-gradient(90deg, #c8956c, #e8c5a8)" }}></div>
+
               <div className="p-8">
-                <h3 className="text-3xl font-display mb-1" style={{color:"#5c3a2e"}}>{pkg.name}</h3>
-                <p className="text-xs mb-4" style={{color:"#b08070"}}>{pkg.sub}</p>
-                <span className="text-5xl font-display font-bold" style={{color:pkg.accent}}>{pkg.price}</span>
-                <p className="text-xs italic my-4 pb-4 border-b" style={{color:"#b08070",borderColor:"rgba(200,149,108,.2)"}}>{pkg.note}</p>
-                <div className="space-y-2.5 mb-7">
-                  {pkg.features.map(f=><div key={f} className="flex items-start gap-2.5"><span className="text-green-500 font-bold mt-0.5 flex-shrink-0">✓</span><span className="text-sm" style={{color:"#6b4c3e"}}>{f}</span></div>)}
+                <div className="flex justify-between items-start mb-4">
+                  <h3 className="text-2xl font-display" style={{ color: "#5c3a2e" }}>
+                    {pkg.package_name}
+                  </h3>
                 </div>
-                <button className={`w-full py-3 rounded-xl font-bold text-sm shadow-md transition-all ${selectedPackage===pkg.id?"shimmer-btn":"bg-white/80 hover:bg-white"}`} style={{color:selectedPackage===pkg.id?"white":pkg.accent}}>
-                  {selectedPackage===pkg.id?"✓ Package Selected":"Select This Package"}
+
+                <p className="text-sm text-gray-500 mb-6 min-h-[40px]">
+                  {pkg.description}
+                </p>
+
+                <div className="mb-6 flex items-baseline gap-2">
+                  <span className="text-3xl font-display" style={{ color: "#8b6058" }}>
+                    ₹{pkg.price}
+                  </span>
+                  <span className="text-xs text-gray-400 uppercase tracking-wider">/ package</span>
+                </div>
+
+                <div className="flex items-center gap-2 mb-6">
+                  <span className="text-xs bg-rose-50 text-[#8b6058] px-3 py-1 rounded-full font-medium border border-rose-100">
+                    ⏱ {pkg.duration_days} Days Duration
+                  </span>
+                </div>
+
+                {/* Services */}
+                <div className="space-y-3 mt-4 mb-8">
+                  <p className="text-xs font-bold tracking-widest uppercase text-gray-400 mb-3 border-b pb-2">Includes</p>
+                  {pkg.services_included?.map((service, index) => (
+                    <div key={index} className="flex items-start gap-3">
+                      <span className="text-[#c8956c] mt-0.5text-sm">✓</span>
+                      <p className="text-sm text-gray-600 leading-snug">
+                        {service}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  className={`mt-auto w-full py-3 rounded-lg font-medium transition-all duration-300 shadow-sm ${selectedPackage === pkg._id
+                    ? "bg-[#8b6058] text-white"
+                    : "bg-[#f8f5f3] text-[#5c3a2e] hover:bg-[#e8dad5]"
+                    }`}
+                >
+                  {selectedPackage === pkg._id
+                    ? "✓ Package Selected"
+                    : "Select Package"}
                 </button>
               </div>
             </div>
           ))}
         </div>
-        <div className="mt-12 glass rounded-2xl p-7 shadow-md">
-          <h4 className="font-display text-2xl mb-4" style={{color:"#5c3a2e"}}>💡 Package Cost Guide</h4>
-          <div className="grid md:grid-cols-2 gap-4 text-sm" style={{color:"#6b4c3e"}}>
-            <p>• Very simple packages at all-inclusive resorts can be <strong>free</strong> with qualifying bookings, or start as low as <strong>$500</strong>.</p>
-            <p>• Basic packages include ceremony décor, wedding cake, bouquet/boutonnière & romantic honeymoon touches.</p>
-            <p>• Semi-private reception dinners may be included with an option to upgrade to a completely private space.</p>
-            <p>• Traveling guests typically pay their own accommodation — meaning serious savings for the couple.</p>
+
+        {selectedPackage && (
+          <div className="mt-16 text-center animate-fade-in">
+            <button
+              onClick={() => navigate("/vendors")}
+              className="px-10 py-4 font-bold tracking-wide text-white rounded-full transition-all duration-300 hover:-translate-y-1 shadow-xl hover:shadow-2xl"
+              style={{ background: "linear-gradient(135deg, #8b6058, #5c3a2e)" }}
+            >
+              Continue to Choose Vendors →
+            </button>
           </div>
-        </div>
-        {selectedPackage&&<div className="mt-10 text-center"><button onClick={()=>navigate("Vendors")} className="shimmer-btn px-12 py-4 rounded-full font-bold shadow-xl text-sm">Continue to Choose Vendors →</button></div>}
+        )}
       </div>
     </div>
+
   );
+
 };
 
 export default PackagesSection;

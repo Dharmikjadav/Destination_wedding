@@ -3,9 +3,6 @@ import "./navbar.css";
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 
 const Layout = ({
-  children,
-  activeNav,
-  setActiveNav,
   showLogin,
   setShowLogin,
   loginMode,
@@ -19,8 +16,9 @@ const Layout = ({
 
   const navigate = useNavigate();
   const location = useLocation();
-  const isVendorRoute = location.pathname.startsWith('/vendor');
+  const isVendorRoute = location.pathname.startsWith('/vendor/') || location.pathname.startsWith('/vendor-dashboard');
   const [loggedUser, setLoggedUser] = React.useState(null);
+  const [activeNav, setActiveNav] = React.useState("Home");
 
   // Load user from localStorage
   React.useEffect(() => {
@@ -80,7 +78,7 @@ const Layout = ({
 
     if (loggedUser.role === "user") {
       return navItems.filter(item =>
-        ["Home", "Destinations", "Packages", "Guest List", "Payments", "Invitations", "My Bookings"].includes(item)
+        ["Home", "Destinations", "Packages", "Vendors", "Guest List", "Payments", "Invitations", "My Bookings"].includes(item)
       );
     }
 
@@ -123,22 +121,45 @@ const Layout = ({
             </div>
 
             {/* ROLE SELECTOR (LOGIN + SIGNUP) */}
-            <div className="flex justify-center gap-3 mb-6">
-              {["user", "vendor", "admin"].map((role) => (
-                <button
-                  key={role}
-                  type="button"
-                  onClick={() => setFormData({ ...formData, role })}
-                  className={`px-4 py-2 rounded-full text-sm font-semibold border transition-all duration-200
+            {loginMode === "login" && (
+              <div className="flex justify-center gap-3 mb-6">
+                {["user", "vendor", "admin"].map((role) => (
+                  <button
+                    key={role}
+                    type="button"
+                    onClick={() => setFormData({ ...formData, role })}
+                    className={`px-4 py-2 rounded-full text-sm font-semibold border transition-all duration-200
               ${formData.role === role
-                      ? "bg-rose-400 text-white border-rose-400 shadow-md"
-                      : "bg-white text-gray-600 border-gray-300 hover:bg-rose-100"
-                    }`}
-                >
-                  {role.toUpperCase()}
-                </button>
-              ))}
-            </div>
+                        ? "bg-rose-400 text-white border-rose-400 shadow-md"
+                        : "bg-white text-gray-600 border-gray-300 hover:bg-rose-100"
+                      }`}
+                  >
+                    {role.toUpperCase()}
+                  </button>
+                ))}
+              </div>
+            )}
+
+
+            {loginMode === "signup" && (
+              <div className="flex justify-center gap-3 mb-6">
+                {["user", "vendor"].map((role) => (
+                  <button
+                    key={role}
+                    type="button"
+                    onClick={() => setFormData({ ...formData, role })}
+                    className={`px-4 py-2 rounded-full text-sm font-semibold border transition-all duration-200
+              ${formData.role === role
+                        ? "bg-rose-400 text-white border-rose-400 shadow-md"
+                        : "bg-white text-gray-600 border-gray-300 hover:bg-rose-100"
+                      }`}
+                  >
+                    {role.toUpperCase()}
+                  </button>
+                ))}
+              </div>
+            )}
+
 
             <form className="space-y-4">
 
